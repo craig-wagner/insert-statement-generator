@@ -1,18 +1,17 @@
 #region using
+
 using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
-using Microsoft.CSharp;
 using Microsoft.SqlServer.Management.Smo;
+
 #endregion using
 
 namespace Wagner.InsertStatementGenerator
 {
-    class PropertyObjectCreator
+    internal class PropertyObjectCreator
     {
-        public static object CreatePropertyObjectFromTable( Table table )
+        public static object CreatePropertyObjectFromTable(Table table)
         {
             const string codeTemplate = @"
                 using System;
@@ -25,44 +24,46 @@ namespace Wagner.InsertStatementGenerator
                     }
                 }";
 
-            StringBuilder generatedCode = new StringBuilder( 50000 );
+            var generatedCode = new StringBuilder(50000);
 
-            foreach( Column column in table.Columns )
+            foreach (Column column in table.Columns)
             {
-                generatedCode.AppendFormat( "public {0} {1};", column.DataType.Name, column.Name );
-                generatedCode.Append( Environment.NewLine );
+                generatedCode.AppendFormat("public {0} {1};", column.DataType.Name, column.Name);
+                generatedCode.Append(Environment.NewLine);
             }
 
-            string codeToCompile = codeTemplate.Replace( "<% code %>", generatedCode.ToString() );
-            
-            CodeDomProvider compiler = CodeDomProvider.CreateProvider( "CSharp" );
-            CompilerParameters compilerParameters = new CompilerParameters();
+            var codeToCompile = codeTemplate.Replace("<% code %>", generatedCode.ToString());
+
+            var compiler = CodeDomProvider.CreateProvider("CSharp");
+            var compilerParameters = new CompilerParameters();
 
             // Add any referenced assemblies
-            compilerParameters.ReferencedAssemblies.Add( "System.dll" );
+            compilerParameters.ReferencedAssemblies.Add("System.dll");
+
             // Load the resulting assembly into memory
             compilerParameters.GenerateInMemory = false;
 
             // Now compile the whole thing
-            CompilerResults compilerResults =
-                compiler.CompileAssemblyFromSource( compilerParameters, codeToCompile );
+            var compilerResults = compiler.CompileAssemblyFromSource(compilerParameters, codeToCompile);
 
-            if( compilerResults.Errors.HasErrors )
+            if (compilerResults.Errors.HasErrors)
             {
                 string errorMsg = compilerResults.Errors.Count.ToString() + " Errors:";
-                for( int i = 0; i < compilerResults.Errors.Count; i++ )
+                for (var i = 0; i < compilerResults.Errors.Count; i++)
+                {
                     errorMsg = errorMsg + "\r\nLine: " +
-                                 compilerResults.Errors[i].Line.ToString() + " - " +
-                                 compilerResults.Errors[i].ErrorText;
+                        compilerResults.Errors[i].Line.ToString() + " - " +
+                        compilerResults.Errors[i].ErrorText;
+                }
 
-                throw new ApplicationException( errorMsg );
+                throw new ApplicationException(errorMsg);
             }
 
-            Assembly assembly = compilerResults.CompiledAssembly;
+            var assembly = compilerResults.CompiledAssembly;
 
-            // *** Retrieve an obj ref – generic type only
-            
-            return assembly.CreateInstance( "Wagner.InsertStatementGenerator.ColumnValues" );
+            // *** Retrieve an obj ref â€“ generic type only
+
+            return assembly.CreateInstance("Wagner.InsertStatementGenerator.ColumnValues");
         }
     }
 }
