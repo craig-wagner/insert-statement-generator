@@ -1,5 +1,3 @@
-#region using
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,8 +5,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using Microsoft.SqlServer.Management.Smo;
-
-#endregion using
 
 namespace Wagner.InsertStatementGenerator
 {
@@ -114,7 +110,7 @@ namespace Wagner.InsertStatementGenerator
 
                     if (node.Urn.Type.ToLower() == "table")
                     {
-                        for (int i = 0; i < _tables.Length && _continueProcessing; i++)
+                        for (var i = 0; i < _tables.Length && _continueProcessing; i++)
                         {
                             // The dependencies retrieved above include may include tables
                             // other than the ones selected by the user, so we need to check
@@ -157,7 +153,7 @@ namespace Wagner.InsertStatementGenerator
 
         private bool HasIdentityColumn(Table table)
         {
-            bool hasIdentityColumn = false;
+            var hasIdentityColumn = false;
 
             foreach (Column column in table.Columns)
             {
@@ -173,7 +169,7 @@ namespace Wagner.InsertStatementGenerator
 
         private bool IsInsertableType(string type)
         {
-            bool isInsertableType = true;
+            var isInsertableType = true;
 
             if (type == "timestamp")
             {
@@ -316,7 +312,7 @@ namespace Wagner.InsertStatementGenerator
             {
                 switch (dataTypeName.ToLower())
                 {
-                    // Numberic types
+                    // Numeric types
                     case "bigint":
                     case "int":
                     case "smallint":
@@ -357,8 +353,8 @@ namespace Wagner.InsertStatementGenerator
                     case "binary":
                     case "varbinary":
                     case "image":
-                        StringBuilder hexString = new StringBuilder(50000);
-                        byte[] theBytes = (byte[])objectValue;
+                        var hexString = new StringBuilder(50000);
+                        var theBytes = (byte[])objectValue;
 
                         for (int i = 0; i < theBytes.Length; i++)
                             hexString.Append(theBytes[i].ToString("X2"));
@@ -426,9 +422,7 @@ namespace Wagner.InsertStatementGenerator
 
             var command = new SqlCommand(sql.ToString(), _connection);
 
-            var reader = command.ExecuteReader();
-
-            return reader;
+            return command.ExecuteReader();
         }
 
         #endregion Private Methods
