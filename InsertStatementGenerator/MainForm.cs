@@ -1,5 +1,3 @@
-#region using
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -12,48 +10,23 @@ using System.Windows.Forms;
 using Microsoft.SqlServer.Management.Smo;
 using Microsoft.Win32;
 
-#endregion using
-
 namespace Wagner.InsertStatementGenerator
 {
     public partial class MainForm : Form
     {
-        #region Constants
-
         private const string _regKey = @"Software\InsertStatementGenerator";
         private const string _defaultTitle = "Insert Statement Generator";
         private const string _notConnected = "(Not Connected)";
-
-        #endregion Constants
-
-        #region Fields
 
         private Server _server = null;
         private Database _db = null;
         private Dictionary<string, DataTable> _filters = null;
 
-        #endregion Fields
+        public MainForm() => InitializeComponent();
 
-        #region Constructors
+        private void DoConnect(object sender, EventArgs e) => Connect();
 
-        public MainForm()
-        {
-            InitializeComponent();
-        }
-
-        #endregion Constructors
-
-        #region Event Handlers
-
-        private void DoConnect(object sender, System.EventArgs e)
-        {
-            Connect();
-        }
-
-        private void DoExit(object sender, System.EventArgs e)
-        {
-            Close();
-        }
+        private void DoExit(object sender, EventArgs e) => Close();
 
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
@@ -61,7 +34,7 @@ namespace Wagner.InsertStatementGenerator
 
             try
             {
-                RegistryKey hkcu = Microsoft.Win32.Registry.CurrentUser;
+                var hkcu = Microsoft.Win32.Registry.CurrentUser;
 
                 RegistryKey appkey;
 
@@ -77,24 +50,21 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "There was a problem saving your settings to the registry.";
+                var msg = "There was a problem saving your settings to the registry.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
         }
 
-        private void DoDisconnect(object sender, System.EventArgs e)
-        {
-            Disconnect();
-        }
+        private void DoDisconnect(object sender, EventArgs e) => Disconnect();
 
-        private void DoAbout(object sender, System.EventArgs e)
+        private void DoAbout(object sender, EventArgs e)
         {
-            AboutForm about = new AboutForm();
+            var about = new AboutForm();
             about.ShowDialog();
         }
 
-        private void lstDatabases_SelectedIndexChanged(object sender, System.EventArgs e)
+        private void lstDatabases_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
@@ -109,7 +79,7 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "Unable to get list of tables from the selected database.";
+                var msg = "Unable to get list of tables from the selected database.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
@@ -129,7 +99,7 @@ namespace Wagner.InsertStatementGenerator
             }
         }
 
-        private void btnGenerate_Click(object sender, System.EventArgs e)
+        private void btnGenerate_Click(object sender, EventArgs e)
         {
             Cursor = Cursors.WaitCursor;
 
@@ -139,7 +109,7 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "Unable to generate script for the selected tables.";
+                var msg = "Unable to generate script for the selected tables.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
@@ -149,20 +119,20 @@ namespace Wagner.InsertStatementGenerator
             }
         }
 
-        private void MainForm_Load(object sender, System.EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             try
             {
-                RegistryKey hkcu = Microsoft.Win32.Registry.CurrentUser;
+                var hkcu = Microsoft.Win32.Registry.CurrentUser;
 
-                RegistryKey appkey = hkcu.OpenSubKey(_regKey);
+                var appkey = hkcu.OpenSubKey(_regKey);
 
                 if (appkey != null)
                 {
-                    int left = (int)appkey.GetValue("Left", Left);
-                    int top = (int)appkey.GetValue("Top", Top);
-                    int width = (int)appkey.GetValue("Width", Width);
-                    int height = (int)appkey.GetValue("Height", Height);
+                    var left = (int)appkey.GetValue("Left", Left);
+                    var top = (int)appkey.GetValue("Top", Top);
+                    var width = (int)appkey.GetValue("Width", Width);
+                    var height = (int)appkey.GetValue("Height", Height);
 
                     Location = new Point(left, top);
                     Size = new Size(width, height);
@@ -170,47 +140,36 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "There was a problem getting your saved settings from the registry.";
+                var msg = "There was a problem getting your saved settings from the registry.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
         }
 
-        private void btnSelectAll_Click(object sender, EventArgs e)
-        {
-            SetTableSelectState(true);
-        }
+        private void btnSelectAll_Click(object sender, EventArgs e) => SetTableSelectState(true);
 
-        private void btnDeselectAll_Click(object sender, EventArgs e)
-        {
-            SetTableSelectState(false);
-        }
+        private void btnDeselectAll_Click(object sender, EventArgs e) => SetTableSelectState(false);
 
-        private void btnApplyFilters_Click(object sender, EventArgs e)
-        {
-            ApplyFilters();
-        }
-
-        #endregion Event Handlers
-
-        #region Private Methods
+        private void btnApplyFilters_Click(object sender, EventArgs e) => ApplyFilters();
 
         private void ApplyFilters()
         {
             try
             {
-                Table[] tables = GetSelectedTables();
+                var tables = GetSelectedTables();
 
                 if (_filters == null)
+                {
                     _filters = new Dictionary<string, DataTable>(tables.Length);
+                }
 
-                FilterForm filterForm = new FilterForm(tables, _filters);
+                var filterForm = new FilterForm(tables, _filters);
 
                 filterForm.ShowDialog();
             }
             catch (Exception ex)
             {
-                string msg = "Problem saving filter information.";
+                var msg = "Problem saving filter information.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
@@ -218,13 +177,15 @@ namespace Wagner.InsertStatementGenerator
 
         private void SetTableSelectState(bool state)
         {
-            for (int i = 0; i < lstTables.Items.Count; i++)
+            for (var i = 0; i < lstTables.Items.Count; i++)
+            {
                 lstTables.SetItemChecked(i, state);
+            }
         }
 
         private void GetDatabases()
         {
-            Cursor = System.Windows.Forms.Cursors.WaitCursor;
+            Cursor = Cursors.WaitCursor;
 
             try
             {
@@ -240,13 +201,13 @@ namespace Wagner.InsertStatementGenerator
             }
             finally
             {
-                Cursor = System.Windows.Forms.Cursors.Default;
+                Cursor = Cursors.Default;
             }
         }
 
         private void GetTables(Database db)
         {
-            Cursor = System.Windows.Forms.Cursors.WaitCursor;
+            Cursor = Cursors.WaitCursor;
 
             try
             {
@@ -266,7 +227,7 @@ namespace Wagner.InsertStatementGenerator
             }
             finally
             {
-                Cursor = System.Windows.Forms.Cursors.Default;
+                Cursor = Cursors.Default;
             }
         }
 
@@ -274,7 +235,7 @@ namespace Wagner.InsertStatementGenerator
         {
             try
             {
-                LogonForm logon = new LogonForm();
+                var logon = new LogonForm();
                 logon.ShowDialog(this);
 
                 if (logon.DialogResult == DialogResult.OK)
@@ -296,7 +257,7 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "Unable to load the list of databases on the server.";
+                var msg = "Unable to load the list of databases on the server.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
@@ -305,7 +266,9 @@ namespace Wagner.InsertStatementGenerator
         private void Disconnect()
         {
             if (_server != null)
+            {
                 _server.ConnectionContext.Disconnect();
+            }
 
             Text = String.Format("{0} {1}", _defaultTitle, _notConnected);
 
@@ -342,7 +305,7 @@ namespace Wagner.InsertStatementGenerator
                     {
                         writer.Close();
 
-                        string scriptEditor = ConfigurationManager.AppSettings["scriptEditor"];
+                        var scriptEditor = ConfigurationManager.AppSettings["scriptEditor"];
                         if (scriptEditor == null || scriptEditor.Length == 0)
                         {
                             scriptEditor = "notepad.exe";
@@ -354,7 +317,7 @@ namespace Wagner.InsertStatementGenerator
             }
             catch (Exception ex)
             {
-                string msg = "Unable to save the script to disk.";
+                var msg = "Unable to save the script to disk.";
                 ErrorHandler.ShowLoggedErrorMessage(msg);
                 ErrorHandler.LogException(msg, ex);
             }
@@ -374,7 +337,5 @@ namespace Wagner.InsertStatementGenerator
 
             return tables;
         }
-
-        #endregion Private Methods
     }
 }

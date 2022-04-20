@@ -101,7 +101,7 @@ namespace Wagner.InsertStatementGenerator
                 var dependencyList = walker.WalkDependencies(dependencyTree);
 
                 // Loop over the tables in dependency order when generating the INSERT statements
-                foreach (DependencyCollectionNode node in dependencyList)
+                foreach (var node in dependencyList)
                 {
                     if (!_continueProcessing)
                     {
@@ -356,8 +356,10 @@ namespace Wagner.InsertStatementGenerator
                         var hexString = new StringBuilder(50000);
                         var theBytes = (byte[])objectValue;
 
-                        for (int i = 0; i < theBytes.Length; i++)
+                        for (var i = 0; i < theBytes.Length; i++)
+                        {
                             hexString.Append(theBytes[i].ToString("X2"));
+                        }
 
                         valueToInsert = "'0x" + hexString.ToString().ToUpper() + "'";
                         break;
